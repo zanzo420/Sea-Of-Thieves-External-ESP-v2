@@ -10,6 +10,7 @@ void cDirectX::initD3D(HWND hWnd)
 	d3dpp.Windowed = TRUE;    // program windowed, not fullscreen
 	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;    // discard old frames
 	d3dpp.hDeviceWindow = hWnd;    // set the window to be used by Direct3D
+	d3dpp.BackBufferFormat = D3DFMT_A8R8G8B8;
 
 
 	// create a device class using this information and the info from the d3dpp stuct

@@ -1,5 +1,6 @@
 #include "Menu.h"
 #include <ctime>
+#include <dwmapi.h>
 
 vars Vars;
 c_config g_configs;
@@ -81,7 +82,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 	RegisterClassEx(&wc);
 
-	hWnd = CreateWindowEx(WS_EX_TOPMOST | WS_EX_LAYERED | WS_EX_TOOLWINDOW,
+	hWnd = CreateWindowEx(WS_EX_TOPMOST | WS_EX_LAYERED | WS_EX_TOOLWINDOW| WS_EX_TRANSPARENT,
 		"WindowClass",
 		"RandomTitle",
 		WS_POPUP,
@@ -91,7 +92,11 @@ int WINAPI WinMain(HINSTANCE hInstance,
 		NULL,
 		hInstance,
 		NULL);
-	SetLayeredWindowAttributes(hWnd, RGB(0, 0, 0), 255, LWA_COLORKEY | LWA_ALPHA);
+	SetLayeredWindowAttributes(hWnd, RGB(0, 0, 0), 255,  LWA_ALPHA);
+
+	MARGINS margins = { -1 };
+	DwmExtendFrameIntoClientArea(hWnd, &margins);
+
 	ShowWindow(hWnd, nCmdShow);
 
 	// set up and initialize Direct3D

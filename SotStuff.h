@@ -126,12 +126,14 @@ enum EBootyTypes
 	EBootyTypes__CargoRunCrate = 9,
 	EBootyTypes__MermaidGem = 10,
 	EBootyTypes__CollectorsChest = 11,
-	EBootyTypes__FishedItem = 12,
-	EBootyTypes__Food = 13,
-	EBootyTypes__TaleArtifact = 14,
-	EBootyTypes__CampaignBooty = 15,
-	EBootyTypes__ReapersBooty = 16,
-	EBootyTypes__EBootyTypes_MAX = 17
+	EBootyTypes__DroppedPouch = 12,
+	EBootyTypes__FishedItem = 13,
+	EBootyTypes__Food = 14,
+	EBootyTypes__TaleArtifact = 15,
+	EBootyTypes__CampaignBooty = 16,
+	EBootyTypes__ReapersBooty = 17,
+	EBootyTypes__RitualSkull = 18,
+	EBootyTypes__EBootyTypes_MAX = 19
 };
 
 
@@ -274,10 +276,10 @@ public:
 	int GetHealth();
 	int GetMaxHealth();
 private:
-	char __pad0xDC[0xDC];
-	float health;
-	char __pad0x18[0x18];
+	unsigned char UnknownData00[0xDC];
 	float maxHealth;
+	float health;
+	unsigned char UnknownData01[0xC4];
 };
 
 class UItemDesc

@@ -78,7 +78,7 @@ bool cMisc::WorldToScreen(Vector3 world , Vector2 * screen) {
 
 	
 
-	float FovAngle = SOT->localCamera.fov + 22;
+	float FovAngle = SOT->localCamera.fov;
 	float ScreenCenterX = Process->Size[0] / 2.0f;
 	float ScreenCenterY = Process->Size[1] / 2.0f;
 	
