@@ -38,7 +38,6 @@ Vector2 RotatePoint(Vector2 pointToRotate, Vector2 centerPoint, float angle, boo
 	return returnVec;
 }
 
-
 void cCheat::readData()
 {
 	if (!baseModule)
@@ -52,8 +51,9 @@ void cCheat::readData()
 	if (!UWorld)
 	{
 		address = Mem->FindSignature(baseModule, baseSize,
-			(BYTE*)("\x48\x8B\x0D\x00\x00\x00\x00\x48\x8B\x01\xFF\x90\x00\x00\x00\x00\x48\x8B\xF8\x33\xD2\x48\x8D\x4E"),
-			(char*)"xxx????xxxxx????xxxxxxxx");
+			(BYTE*)("\x48\x8B\x05\x00\x00\x00\x00\x48\x8B\x88\x00\x00\x00\x00\x48\x85\xC9\x74\x06\x48\x8B\x49\x70"),
+			(char*)"xxx????xxx????xxxxxxxxx");
+
 		auto uworldoffset = Mem->Read<int32_t>(address + 3);
 		UWorld = address + uworldoffset + 7;
 	}
@@ -67,6 +67,7 @@ void cCheat::readData()
 	{
 		address = Mem->FindSignature(baseModule, baseSize, (BYTE*)"\x48\x8B\x15\x00\x00\x00\x00\x3B\x42\x1C", (char*)"xxx????xxx");
 		auto gobjectsoffset = Mem->Read<int32_t>(address + 3);
+		auto offset = gobjectsoffset + 7;
 		GObjects = Mem->Read<uintptr_t>(address + gobjectsoffset + 7);
 	}
 
@@ -91,6 +92,7 @@ void cCheat::readData()
 
 	}
 	auto world = Mem->Read<cUWorld>(Mem->Read<uintptr_t>(UWorld));
+	//auto world = Mem->Read<cUWorld>(baseModule + 0x59B12D8);
 	auto LocalPlayer = world.GetGameInstance().GetLocalPlayer();
 	auto player_controller = LocalPlayer.GetPlayerController();
 	auto CameraManager = player_controller.GetCameraManager();
@@ -154,7 +156,7 @@ void cCheat::readData()
 				}
 			}
 		}
-/*
+
 		else if (name.find("IslandService") != std::string::npos)
 		{
 			if (!Vars.ESP.World.bIslands)
@@ -162,7 +164,6 @@ void cCheat::readData()
 
 
 			auto IslandService = *reinterpret_cast<AIslandService*>(&actors[i]);
-
 
 			auto Islands = IslandService.GetIslandArray();
 			if (!Islands.IsValid())
@@ -180,9 +181,12 @@ void cCheat::readData()
 
 			}
 		}
-		*/
+		
 		else if (name.find("BP_SkellyShip_ShipCloud") != std::string::npos)
 		{
+
+
+
 			if (!Vars.ESP.World.bFort)
 				continue;
 
@@ -190,7 +194,6 @@ void cCheat::readData()
 			auto distance = SOT->localCamera.position.DistTo(pos) / 100.00f;
 
 			Color color = { Vars.ESP.World.colorWorld[0],Vars.ESP.World.colorWorld[1],Vars.ESP.World.colorWorld[2],Vars.ESP.World.colorWorld[3] };
-
 
 			Vector2 Screen;
 			if (Misc->WorldToScreen(pos, &Screen))
@@ -215,18 +218,6 @@ void cCheat::readData()
 
 		}
 
-		else if (name.find("Beacon") != std::string::npos)
-		{
-			auto pos = actor.GetRootComponent().GetPosition();
-			auto distance = SOT->localCamera.position.DistTo(pos) / 100.00f;
-
-			Color color = { Vars.ESP.World.colorWorld[0],Vars.ESP.World.colorWorld[1],Vars.ESP.World.colorWorld[2],Vars.ESP.World.colorWorld[3] };
-
-
-			Vector2 Screen;
-			if (Misc->WorldToScreen(Vector3(pos.x, pos.y, 2000), &Screen))
-				DrawString(std::string("Beacon [ " + std::to_string((int)distance) + "m ]").c_str(), Screen.x, Screen.y, color, true, "default");
-		}
 
 		else if (name.find("MapTable_C") != std::string::npos)
 		{
@@ -267,9 +258,13 @@ void cCheat::readData()
 
 					Color color = { Vars.ESP.World.colorWorld[0],Vars.ESP.World.colorWorld[1],Vars.ESP.World.colorWorld[2],Vars.ESP.World.colorWorld[3] };
 
+					int dist = (int)(SOT->localPlayer.position.DistTo(Chest) / 100.f);
 
-					if (Misc->WorldToScreen(Chest, &Screen))
-						DrawString(std::string("Reapers Chest [" + std::to_string((int)(SOT->localPlayer.position.DistTo(Chest) / 100.f)) + "m] ").c_str(), Screen.x, Screen.y, color, true, "default");
+					if (dist > 150)
+					{
+						if (Misc->WorldToScreen(Chest, &Screen))
+							DrawString(std::string("Reapers Chest [" + std::to_string(dist) + "m] ").c_str(), Screen.x, Screen.y, color, true, "default");
+					}
 				}
 			}
 
@@ -383,11 +378,15 @@ void cCheat::readData()
 							continue;
 
 						if (pirateName == SOT->Pirates[pirates].name)
+						{
+
+							SOT->Pirates[pirates].distance = distance;
 							if (SOT->Pirates[pirates].crewID == SOT->localPlayer.crewID)
 							{
 								boxColor = Color{ Vars.ESP.Player.colorTeam[0],Vars.ESP.Player.colorTeam[1],Vars.ESP.Player.colorTeam[2],Vars.ESP.Player.colorTeam[3] };
 								bTeammate = true;
 							}
+						}
 					}
 
 					if (!Vars.ESP.Player.bTeam && bTeammate)
@@ -418,16 +417,31 @@ void cCheat::readData()
 		{
 		if (!Vars.ESP.Ships.bActive)
 			continue;
+
 			auto pos = actor.GetRootComponent().GetPosition();
 			auto distance = SOT->localCamera.position.DistTo(pos) / 100.00f;
 
 			auto Ship = *reinterpret_cast<AShip*>(&actors[i]);
 
+			FGuid crewid = Ship.GetCrewOwnershipComponent().GetCrewId();
+
+			if (name.find("NetProxy") != std::string::npos)
+			{
+				if (Ship.GetOwningActor())
+					continue;
+
+				crewid = FGuid();
+			}
+				
 			Color color = { Vars.ESP.Ships.colorEnemy[0],Vars.ESP.Ships.colorEnemy[1],Vars.ESP.Ships.colorEnemy[2],Vars.ESP.Ships.colorEnemy[3] };
 
-				if (SOT->localPlayer.crewID == Ship.GetCrewOwnershipComponent().GetCrewId())
-					color = { Vars.ESP.Ships.colorTeam[0],Vars.ESP.Ships.colorTeam[1],Vars.ESP.Ships.colorTeam[2],Vars.ESP.Ships.colorTeam[3] };
 
+			
+
+			if (SOT->localPlayer.crewID == crewid)
+			{
+				color = { Vars.ESP.Ships.colorTeam[0],Vars.ESP.Ships.colorTeam[1],Vars.ESP.Ships.colorTeam[2],Vars.ESP.Ships.colorTeam[3] };
+			}
 			Vector2 Screen;
 			if (Misc->WorldToScreen(Vector3(pos.x,pos.y,pos.z + 2000), &Screen))
 				DrawString(std::string("Sloop [ " + std::to_string((int)distance) + "m ]").c_str() , Screen.x, Screen.y, color, true, "default");
@@ -441,6 +455,10 @@ void cCheat::readData()
 		auto distance = SOT->localCamera.position.DistTo(pos) / 100.00f;
 
 			auto Ship = *reinterpret_cast<AShip*>(&actors[i]);
+
+			if (name.find("NetProxy") != std::string::npos)
+				if (Ship.GetOwningActor())
+					continue;
 
 
 			Color color = { Vars.ESP.Ships.colorEnemy[0],Vars.ESP.Ships.colorEnemy[1],Vars.ESP.Ships.colorEnemy[2],Vars.ESP.Ships.colorEnemy[3] };
@@ -458,11 +476,16 @@ void cCheat::readData()
 		{
 		if (!Vars.ESP.Ships.bActive)
 			continue;
+
+
 		auto pos = actor.GetRootComponent().GetPosition();
 		auto distance = SOT->localCamera.position.DistTo(pos) / 100.00f;
 
 			auto Ship = *reinterpret_cast<AShip*>(&actors[i]);
 
+			if (name.find("NetProxy") != std::string::npos)
+				if (Ship.GetOwningActor())
+					continue;
 
 			Color color = { Vars.ESP.Ships.colorEnemy[0],Vars.ESP.Ships.colorEnemy[1],Vars.ESP.Ships.colorEnemy[2],Vars.ESP.Ships.colorEnemy[3] };
 
@@ -484,6 +507,12 @@ void cCheat::readData()
 
 		auto Ship = *reinterpret_cast<AShip*>(&actors[i]);
 
+		if (name.find("NetProxy") != std::string::npos)
+		{
+			if (Ship.GetOwningActor())
+				continue;
+		}
+
 		Color color = { Vars.ESP.World.colorWorld[0],Vars.ESP.World.colorWorld[1],Vars.ESP.World.colorWorld[2],Vars.ESP.World.colorWorld[3] };
 
 		Vector2 Screen;
@@ -498,6 +527,12 @@ void cCheat::readData()
 		auto distance = SOT->localCamera.position.DistTo(pos) / 100.00f;
 
 		auto Ship = *reinterpret_cast<AShip*>(&actors[i]);
+
+		if (name.find("NetProxy") != std::string::npos)
+		{
+			if (Ship.GetOwningActor())
+				continue;
+		}
 
 		Color color = { Vars.ESP.World.colorWorld[0],Vars.ESP.World.colorWorld[1],Vars.ESP.World.colorWorld[2],Vars.ESP.World.colorWorld[3] };
 
@@ -614,6 +649,7 @@ void cCheat::readData()
 			if (Misc->WorldToScreen(pos, &Screen))
 				DrawString(std::wstring(treasure.GetBootyItemInfo().GetItemDesc().GetName() + L" [ " + std::to_wstring((int)distance) + L"m ] ").c_str(), Screen.x, Screen.y, color, true, "default");
 		}
+
 
 	}
 

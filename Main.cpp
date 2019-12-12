@@ -153,10 +153,21 @@ int WINAPI WinMain(HINSTANCE hInstance,
 			directX->Reset();
 		else
 		{
-
+			clock_t beginFrame = clock();
 			if (!directX->resetLock)
 			directX->Render(Process->isWindowActive());
+			clock_t endFrame = clock();
 
+			deltaTime += endFrame - beginFrame;
+			frames++;
+
+			//if you really want FPS
+			if (clockToMilliseconds(deltaTime) > 1000.0) { //every second
+				directX->frames = frames;//(double)frames * 0.5 + frameRate * 0.5; //more stable
+				frames = 0;
+				deltaTime -= CLOCKS_PER_SEC;
+				averageFrameTimeMilliseconds = 1000.0 / (frameRate == 0 ? 0.001 : frameRate);
+			}
 		}
 	}
 
