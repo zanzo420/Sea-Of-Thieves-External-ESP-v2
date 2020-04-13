@@ -78,7 +78,7 @@ bool cMisc::WorldToScreen(Vector3 world , Vector2 * screen) {
 
 	
 
-	float FovAngle = SOT->localCamera.fov + 22;
+	float FovAngle = SOT->localCamera.fov;
 	float ScreenCenterX = Process->Size[0] / 2.0f;
 	float ScreenCenterY = Process->Size[1] / 2.0f;
 	
@@ -88,7 +88,7 @@ bool cMisc::WorldToScreen(Vector3 world , Vector2 * screen) {
 	screen->y = ScreenCenterY - vTransformed.y * (ScreenCenterX / tanf(FovAngle * (float)PI / 360.f)) / vTransformed.z;
 	
 	
-	
+	/*
 	auto Ratio = Process->Size[0] / Process->Size[1];
 	if (Ratio < 4.0f / 3.0f)
 		Ratio = 4.0f / 3.0f;
@@ -97,9 +97,9 @@ bool cMisc::WorldToScreen(Vector3 world , Vector2 * screen) {
 
 	int debug = FOV;
 
-	//screen->x = ScreenCenterX + vTransformed.x * ScreenCenterX / FOV / vTransformed.z;
-	//screen->y = ScreenCenterY - vTransformed.y * ScreenCenterX / FOV / vTransformed.z;
-	
+	screen->x = ScreenCenterX + vTransformed.x * ScreenCenterX / FOV / vTransformed.z;
+	screen->y = ScreenCenterY - vTransformed.y * ScreenCenterX / FOV / vTransformed.z;
+	*/
 
 
 	return true;

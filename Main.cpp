@@ -1,5 +1,6 @@
 #include "Menu.h"
 #include <ctime>
+#include <dwmapi.h>
 
 vars Vars;
 c_config g_configs;
@@ -81,7 +82,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 	RegisterClassEx(&wc);
 
-	hWnd = CreateWindowEx(WS_EX_TOPMOST | WS_EX_LAYERED | WS_EX_TOOLWINDOW,
+	hWnd = CreateWindowEx(WS_EX_TOPMOST | WS_EX_LAYERED | WS_EX_TOOLWINDOW| WS_EX_TRANSPARENT,
 		"WindowClass",
 		"RandomTitle",
 		WS_POPUP,
@@ -91,7 +92,11 @@ int WINAPI WinMain(HINSTANCE hInstance,
 		NULL,
 		hInstance,
 		NULL);
-	SetLayeredWindowAttributes(hWnd, RGB(0, 0, 0), 255, LWA_COLORKEY | LWA_ALPHA);
+	SetLayeredWindowAttributes(hWnd, RGB(0, 0, 0), 255,  LWA_ALPHA);
+
+	MARGINS margins = { -1 };
+	DwmExtendFrameIntoClientArea(hWnd, &margins);
+
 	ShowWindow(hWnd, nCmdShow);
 
 	// set up and initialize Direct3D
@@ -148,10 +153,21 @@ int WINAPI WinMain(HINSTANCE hInstance,
 			directX->Reset();
 		else
 		{
-
+			clock_t beginFrame = clock();
 			if (!directX->resetLock)
 			directX->Render(Process->isWindowActive());
+			clock_t endFrame = clock();
 
+			deltaTime += endFrame - beginFrame;
+			frames++;
+
+			//if you really want FPS
+			if (clockToMilliseconds(deltaTime) > 1000.0) { //every second
+				directX->frames = frames;//(double)frames * 0.5 + frameRate * 0.5; //more stable
+				frames = 0;
+				deltaTime -= CLOCKS_PER_SEC;
+				averageFrameTimeMilliseconds = 1000.0 / (frameRate == 0 ? 0.001 : frameRate);
+			}
 		}
 	}
 

@@ -126,12 +126,16 @@ enum EBootyTypes
 	EBootyTypes__CargoRunCrate = 9,
 	EBootyTypes__MermaidGem = 10,
 	EBootyTypes__CollectorsChest = 11,
-	EBootyTypes__FishedItem = 12,
-	EBootyTypes__Food = 13,
-	EBootyTypes__TaleArtifact = 14,
-	EBootyTypes__CampaignBooty = 15,
-	EBootyTypes__ReapersBooty = 16,
-	EBootyTypes__EBootyTypes_MAX = 17
+	EBootyTypes__DroppedPouch = 12,
+	EBootyTypes__FishedItem = 13,
+	EBootyTypes__Food = 14,
+	EBootyTypes__TaleArtifact = 15,
+	EBootyTypes__CampaignBooty = 16,
+	EBootyTypes__ReapersBooty = 17,
+	EBootyTypes__RitualSkull = 18,
+	EBootyTypes__AshenBooty = 19,
+	EBootyTypes__AshenGift = 20,
+	EBootyTypes__EBootyTypes_MAX = 21
 };
 
 
@@ -214,11 +218,10 @@ struct FQuat {
 	float W;
 };
 
-struct alignas(16) FTransform
+struct FTransform
 {
 	struct FQuat                                       Rotation;                                                 // 0x0000(0x0010) (Edit, BlueprintVisible, SaveGame, IsPlainOldData)
 	struct Vector3                                     Translation;                                              // 0x0010(0x000C) (Edit, BlueprintVisible, ZeroConstructor, SaveGame, IsPlainOldData)
-	unsigned char                                      UnknownData00[0x4];                                       // 0x001C(0x0004) MISSED OFFSET
 	struct Vector3                                     Scale3D;                                                  // 0x0020(0x000C) (Edit, BlueprintVisible, ZeroConstructor, SaveGame, IsPlainOldData)
 	unsigned char                                      UnknownData01[0x4];                                       // 0x002C(0x0004) MISSED OFFSET
 };
@@ -252,11 +255,8 @@ public:
 	Vector3 GetPosition();
 	Vector3 GetRotation();
 private:
-	char __pad0x130[0x130];
+	char __pad0x130[0x140];
 	FTransform transform;
-	char __pad0x60[0x60];
-	Vector3 relativePosition;
-	Vector3 relativeAngles;
 };
 
 class APlayerState
@@ -274,10 +274,10 @@ public:
 	int GetHealth();
 	int GetMaxHealth();
 private:
-	char __pad0xDC[0xDC];
-	float health;
-	char __pad0x18[0x18];
+	unsigned char UnknownData00[0xD4];
 	float maxHealth;
+	float health;
+	unsigned char UnknownData01[0xC4];
 };
 
 class UItemDesc
@@ -370,6 +370,7 @@ class AShip
 {
 public:
 	UCrewOwnershipComponent GetCrewOwnershipComponent();
+	uintptr_t GetOwningActor();
 private:
 	char __pad0x0[0x1000];
 };
@@ -398,7 +399,7 @@ public:
 	Vector3 GetCameraRotation();
 	float	GetCameraFOV();
 private:
-	char __pad0x0[0x530];
+	char __pad0x0[0x490];
 	Vector3 position;
 	Vector3 rotation;
 	char __pad0x10[0x10];
@@ -418,6 +419,7 @@ public:
 	AActor GetActor();
 	APlayerCameraManager GetCameraManager();
 	Vector3 GetPlayerAngles();
+
 public:
 	char __pad0x0[0x1000];
 
@@ -429,7 +431,7 @@ public:
 	APlayerController GetPlayerController();
 	void SetPlayerAngles(Vector3 angles);
 private:
-	char __pad0x0[0x100];
+	char __pad0x0[0x1000];
 
 };
 
@@ -536,14 +538,39 @@ struct FIsland
 	char __pad0x30[0x20];
 };
 
+struct UIslandDataAssetEntry
+{
+public:
+	int GetNameID();
+	std::wstring GetName();
+
+private:
+	char __pad0x0[0x28];
+	int IslandNameId;
+	char __pad0x2C[0x84];
+	uintptr_t IslandName;
+};
+
+class UIslandDataAsset
+{
+public:
+	TArray<class UIslandDataAssetEntry> GetIslandDataAssetEntry();
+
+private:
+	char __pad0x0[0x48];
+	TArray<class UIslandDataAssetEntry> IslandDataEntries;
+};
+
 
 class AIslandService
 {
 public:
 	TArray<struct FIsland> GetIslandArray();
+	UIslandDataAsset GetIslandDataAsset();
 
 private:
 	char __pad0x0[0x510];
+	uintptr_t m_pIslandDataAsset;
 	TArray<struct FIsland> IslandArray;
 
 };

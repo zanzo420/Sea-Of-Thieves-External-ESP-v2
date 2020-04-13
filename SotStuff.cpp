@@ -13,7 +13,7 @@ Vector3 USceneComponent::GetPosition()
 
 Vector3 USceneComponent::GetRotation()
 {
-	return this->relativeAngles;
+	return Vector3(this->transform.Rotation.X, this->transform.Rotation.Y, this->transform.Rotation.Z);
 }
 
 int AActor::GetID()
@@ -70,16 +70,6 @@ AActor APlayerController::GetActor()
 APlayerCameraManager APlayerController::GetCameraManager()
 {
 	return Mem->Read<APlayerCameraManager>(*(uintptr_t*)(__pad0x0 + Offsets.APlayerController.CameraManager));
-}
-
-Vector3 APlayerController::GetPlayerAngles()
-{
-	return *(Vector3*)(__pad0x0 + Offsets.ULocalPlayer.PlayerController + 0x4C8);
-}
-
-void ULocalPlayer::SetPlayerAngles(Vector3 angles)
-{
-	Mem->Write<Vector3>(*(uintptr_t*)(__pad0x0 + Offsets.ULocalPlayer.PlayerController + 0x4C8), angles);
 }
 
 APlayerController ULocalPlayer::GetPlayerController()
@@ -170,6 +160,11 @@ UCrewOwnershipComponent AShip::GetCrewOwnershipComponent()
 	return Mem->Read<UCrewOwnershipComponent>(*(uintptr_t*)(__pad0x0 + Offsets.AShip.CrewOwnershipComponent));
 }
 
+uintptr_t AShip::GetOwningActor()
+{
+	return *(uintptr_t*)(__pad0x0 + 0x410);
+}
+
 TArray<struct FXMarksTheSpotMapMark> AXMarksTheSpotMap::GetMarks()
 {
 	return this->Marks;
@@ -232,12 +227,17 @@ TArray<class FWorldMapShipLocation> AMapTable::GetTrackedShips()
 
 TArray<struct Vector3> AMapTable::GetTrackedBootyItemLocations()
 {
-	return *(TArray<struct Vector3>*)(__pad0x0 + 0x0598);
+	return *(TArray<struct Vector3>*)(__pad0x0 + 0x0500);
 }
 
 TArray<struct FIsland> AIslandService::GetIslandArray()
 {
 	return this->IslandArray;
+}
+
+UIslandDataAsset AIslandService::GetIslandDataAsset()
+{
+	return Mem->Read<UIslandDataAsset>(this->m_pIslandDataAsset);
 }
 
 FGuid FWorldMapShipLocation::GetCrewId()
@@ -253,4 +253,19 @@ UObject FWorldMapShipLocation::GetUObject()
 std::wstring AFauna::GetName()
 {
 	return Mem->Read<textx>(Mem->Read<uintptr_t>(*(uintptr_t*)(__pad0x0 + Offsets.AFauna.Name))).word;
+}
+
+TArray<class UIslandDataAssetEntry> UIslandDataAsset::GetIslandDataAssetEntry()
+{
+	return (this->IslandDataEntries);
+}
+
+int UIslandDataAssetEntry::GetNameID()
+{
+	return this->IslandNameId;
+}
+
+std::wstring UIslandDataAssetEntry::GetName()
+{
+	return Mem->Read<textx>(Mem->Read<uintptr_t>(this->IslandName)).word;
 }

@@ -284,7 +284,7 @@ static bool once = false;
 
 void cDirectX::Render(bool  active)
 {
-	d3ddev->Clear(NULL, NULL, D3DCLEAR_TARGET, NULL, 1.0f, NULL);
+	d3ddev->Clear(NULL, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0,0,0,0), 1.0f, NULL);
 	d3ddev->BeginScene();
 
 	if (!once)	
